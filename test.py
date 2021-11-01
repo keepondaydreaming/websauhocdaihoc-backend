@@ -1,4 +1,5 @@
-import torch
+from roberta import Inference
 
-test = torch.rand(1, 3, 3, 3)
-print(test.size())
+model = Inference(model_path='model_1.pth')
+encoded = model.predict('this is a test text')
+print(encoded)
