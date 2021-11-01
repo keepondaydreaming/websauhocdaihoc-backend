@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from model import Excerpt
+from roberta import Inference
+
+model = Inference(model_path='model_1.pth')
 
 app = FastAPI()
 
@@ -23,7 +26,10 @@ async def read_root():
 
 @app.post("/inference")
 async def inference(req: Excerpt):
-    score = len(req.excerpt)
+    if not req.excerpt or req.excerpt.isspace():
+        return 0.0
+
+    score = model.predict(req.excerpt.strip())
     return score
 
 
