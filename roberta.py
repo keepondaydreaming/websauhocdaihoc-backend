@@ -12,7 +12,6 @@ gc.enable()
 BATCH_SIZE = 32
 MAX_LEN = 248
 HIDDEN_STATE = 768
-EVAL_SCHEDULE = [(0.50, 16), (0.49, 8), (0.48, 4), (0.47, 2), (-1.0, 1)]
 ROBERTA_PATH = "roberta-base"
 TOKENIZER_PATH = "roberta-base"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -42,7 +41,9 @@ class LitModel(nn.Module):
 
         self.regressor = nn.Sequential(nn.Linear(HIDDEN_STATE, 1))
 
-    def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> nn.Module:
+    def forward(
+        self, input_ids: torch.Tensor, attention_mask: torch.Tensor
+    ) -> nn.Module:
         roberta_output = self.roberta(
             input_ids=input_ids, attention_mask=attention_mask
         )
@@ -51,6 +52,7 @@ class LitModel(nn.Module):
         # 1 for the embedding layer, and 12 for the 12 Roberta layers.
         # We take the hidden states from the last Roberta layer.
         last_layer_hidden_states = roberta_output.hidden_states[-1]
+        # print(last_layer_hidden_states.size())
 
         # The number of cells is MAX_LEN.
         # The size of the hidden state of each cell is 768 (for roberta-base).
@@ -91,8 +93,12 @@ class Inference:
             truncation=True,
             return_attention_mask=True,
         )
-        input_ids = torch.tensor(encoded['input_ids'])
-        attention_mask = torch.tensor(encoded['attention_mask'])
+        input_ids = torch.tensor(encoded["input_ids"])
+        attention_mask = torch.tensor(encoded["attention_mask"])
+        # print(input_ids)
+        # print(attention_mask)
+        # print(input_ids.size())
+        # print(attention_mask.size())
         return (input_ids, attention_mask)
 
     def predict(self, excerpt: str) -> float:
